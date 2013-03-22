@@ -14,7 +14,7 @@ import (
 var (
     Feeds = []string{
         "http://comicsrss.herokuapp.com/cad",
-        "http://feeds.feedburner.com/thedoghousediaries/feed",
+        "http://comicsrss.herokuapp.com/thedoghousediaries",
         "http://comicsrss.herokuapp.com/cyanide",
         "http://www.questionablecontent.net/QCRSS.xml",
         "http://twitterthecomic.tumblr.com/rss",
@@ -79,6 +79,7 @@ func fetchFeedItems(url string, items chan *rss.Item, done chan string) {
         err := feed.Fetch(url, nil)
         if err != nil {
             log.Printf("failed fetching %s: %s", url, err)
+            done <- url
         }
     }()
 }
