@@ -1,4 +1,3 @@
-rss-smash
-=========
+# rss-smash
 
 RSS! SMASH!!!
