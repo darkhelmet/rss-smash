@@ -22,7 +22,7 @@ var (
     }
     Feed = T.Must(T.New("rss").Funcs(T.FuncMap{
         "Safe":  func(s string) T.HTML { return T.HTML(s) },
-        "CDATA": func(s string) T.HTML { return T.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", s)) },
+        "CDATA": func(s string) T.HTML { return T.HTML(fmt.Sprintf("<![CDATA[%s]]>", s)) },
     }).Parse(`{{"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" | Safe}}
 <rss version="2.0">
     <channel>
@@ -33,9 +33,7 @@ var (
         <item>
             <title>{{.Title}}</title>
             <link>{{.Link}}</link>
-            <description>
-                {{.Description | CDATA}}
-            </description>
+            <description>{{.Description | CDATA}}</description>
             <guid>{{.Guid}}</guid>
         </item>
         {{end}}
