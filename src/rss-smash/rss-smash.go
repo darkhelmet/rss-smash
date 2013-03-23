@@ -82,6 +82,14 @@ func fetchFeedItems(url string, items chan *rss.Item, done chan string) {
     }()
 }
 
+func parseTime(s string) (time.Time, error) {
+    t, err := time.Parse(time.RFC1123Z, s)
+    if err != nil {
+        return time.Parse(time.RFC1123, s)
+    }
+    return t, err
+}
+
 func fetchAllFeedItems(urls []string) (items SortedItems) {
     ichan := make(chan *rss.Item)
     count := len(urls)
@@ -98,7 +106,7 @@ func fetchAllFeedItems(urls []string) (items SortedItems) {
 
         select {
         case item := <-ichan:
-            pubdate, err := time.Parse(time.RFC1123Z, item.PubDate)
+            pubdate, err := parseTime(item.PubDate)
             if err == nil {
                 items = append(items, &Item{
                     Title:       item.Title,
