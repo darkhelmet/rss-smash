@@ -20,10 +20,11 @@ var (
         "http://twitterthecomic.tumblr.com/rss",
         "http://www.xkcd.com/rss.xml",
     }
-    Feed = T.Must(T.New("rss").Funcs(T.FuncMap{
+    Funcs = T.FuncMap{
         "Safe":  func(s string) T.HTML { return T.HTML(s) },
         "CDATA": func(s string) T.HTML { return T.HTML(fmt.Sprintf("<![CDATA[%s]]>", s)) },
-    }).Parse(`{{"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" | Safe}}
+    }
+    Feed = T.Must(T.New("rss").Funcs(Funcs).Parse(`{{"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" | Safe}}
 <rss version="2.0">
     <channel>
         <title>RSS! SMASH!</title>
@@ -61,14 +62,14 @@ func (si SortedItems) Swap(i, j int) {
     si[i], si[j] = si[j], si[i]
 }
 
-func fetchFeedItems(url string, items chan *rss.Item, done chan string) {
+func fetchFeedItems(url string, items chan *rss.Item) {
     channelHandler := func(f *rss.Feed, newchannels []*rss.Channel) {
         for _, channel := range newchannels {
             log.Printf("got new channel %s with %d items", channel.Title, len(channel.Items))
             for _, item := range channel.Items {
                 items <- item
             }
-            done <- channel.Title
+            close(items)
         }
     }
 
@@ -77,7 +78,7 @@ func fetchFeedItems(url string, items chan *rss.Item, done chan string) {
         err := feed.Fetch(url, nil)
         if err != nil {
             log.Printf("failed fetching %s: %s", url, err)
-            done <- url
+            close(items)
         }
     }()
 }
@@ -91,21 +92,16 @@ func parseTime(s string) (time.Time, error) {
 }
 
 func fetchAllFeedItems(urls []string) (items SortedItems) {
-    ichan := make(chan *rss.Item)
-    count := len(urls)
-    done := make(chan string)
+    var ichans []chan *rss.Item
 
     for _, url := range Feeds {
-        fetchFeedItems(url, ichan, done)
+        ichan := make(chan *rss.Item)
+        fetchFeedItems(url, ichan)
+        ichans = append(ichans, ichan)
     }
 
-    for {
-        if count == 0 {
-            break
-        }
-
-        select {
-        case item := <-ichan:
+    for _, ichan := range ichans {
+        for item := range ichan {
             pubdate, err := parseTime(item.PubDate)
             if err == nil {
                 items = append(items, &Item{
@@ -116,11 +112,10 @@ func fetchAllFeedItems(urls []string) (items SortedItems) {
                     PubDate:     pubdate.UTC(),
                 })
             }
-        case title := <-done:
-            log.Printf("finished %s", title)
-            count--
         }
     }
+
+    log.Println("done retrieving items")
 
     sort.Sort(items)
 
