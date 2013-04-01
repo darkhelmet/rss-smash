@@ -19,6 +19,7 @@ var (
         "http://www.questionablecontent.net/QCRSS.xml",
         "http://twitterthecomic.tumblr.com/rss",
         "http://www.xkcd.com/rss.xml",
+        "http://www.rsspect.com/rss/qwantz.xml",
     }
     Funcs = T.FuncMap{
         "Safe":  func(s string) T.HTML { return T.HTML(s) },
