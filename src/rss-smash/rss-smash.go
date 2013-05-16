@@ -1,10 +1,13 @@
 package main
 
 import (
+    "code.google.com/p/go-charset/charset"
     "fmt"
     "github.com/darkhelmet/env"
+    "github.com/darkhelmet/goctopus"
     rss "github.com/jteeuwen/go-pkg-rss"
     T "html/template"
+    "io"
     "log"
     "net/http"
     "sort"
@@ -44,6 +47,10 @@ var (
 `))
 )
 
+func init() {
+    charset.CharsetDir = "src/code.google.com/p/go-charset/datafiles"
+}
+
 type Item struct {
     Title, Link, Description, Guid string
     PubDate                        time.Time
@@ -63,7 +70,12 @@ func (si SortedItems) Swap(i, j int) {
     si[i], si[j] = si[j], si[i]
 }
 
-func fetchFeedItems(url string, items chan *rss.Item) {
+func trololol(charset string, input io.Reader) (io.Reader, error) {
+    return input, nil
+}
+
+func fetchFeedItems(url string) chan *rss.Item {
+    items := make(chan *rss.Item)
     channelHandler := func(f *rss.Feed, newchannels []*rss.Channel) {
         for _, channel := range newchannels {
             log.Printf("got new channel %s with %d items", channel.Title, len(channel.Items))
@@ -76,12 +88,14 @@ func fetchFeedItems(url string, items chan *rss.Item) {
 
     go func() {
         feed := rss.New(5, true, channelHandler, nil)
-        err := feed.Fetch(url, nil)
+        err := feed.Fetch(url, charset.NewReader)
         if err != nil {
             log.Printf("failed fetching %s: %s", url, err)
             close(items)
         }
     }()
+
+    return items
 }
 
 func parseTime(s string) (time.Time, error) {
@@ -93,26 +107,25 @@ func parseTime(s string) (time.Time, error) {
 }
 
 func fetchAllFeedItems(urls []string) (items SortedItems) {
-    var ichans []chan *rss.Item
+    var ichans []interface{}
 
     for _, url := range Feeds {
-        ichan := make(chan *rss.Item)
-        fetchFeedItems(url, ichan)
-        ichans = append(ichans, ichan)
+        ichans = append(ichans, fetchFeedItems(url))
     }
 
-    for _, ichan := range ichans {
-        for item := range ichan {
-            pubdate, err := parseTime(item.PubDate)
-            if err == nil {
-                items = append(items, &Item{
-                    Title:       item.Title,
-                    Link:        item.Links[0].Href,
-                    Description: item.Description,
-                    Guid:        item.Guid,
-                    PubDate:     pubdate.UTC(),
-                })
-            }
+    ic := goctopus.New(ichans...).Run()
+
+    for v := range ic {
+        item := v.(*rss.Item)
+        pubdate, err := parseTime(item.PubDate)
+        if err == nil {
+            items = append(items, &Item{
+                Title:       item.Title,
+                Link:        item.Links[0].Href,
+                Description: item.Description,
+                Guid:        item.Guid,
+                PubDate:     pubdate.UTC(),
+            })
         }
     }
 
