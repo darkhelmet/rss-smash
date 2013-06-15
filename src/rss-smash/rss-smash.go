@@ -117,7 +117,7 @@ func fetchAllFeedItems(urls []string) (items SortedItems) {
     for v := range ic {
         item := v.(*rss.Item)
         pubdate, err := parseTime(item.PubDate)
-        if err == nil {
+        if err == nil && len(item.Links) > 0 {
             items = append(items, &Item{
                 Title:       item.Title,
                 Link:        item.Links[0].Href,
