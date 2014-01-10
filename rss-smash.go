@@ -71,10 +71,6 @@ func (si SortedItems) Swap(i, j int) {
     si[i], si[j] = si[j], si[i]
 }
 
-func trololol(charset string, input io.Reader) (io.Reader, error) {
-    return input, nil
-}
-
 func fetchFeedItems(url string) chan *rss.Item {
     items := make(chan *rss.Item)
     channelHandler := func(f *rss.Feed, newchannels []*rss.Channel) {
