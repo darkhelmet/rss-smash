@@ -7,7 +7,6 @@ import (
     "github.com/darkhelmet/goctopus"
     rss "github.com/jteeuwen/go-pkg-rss"
     T "html/template"
-    "io"
     "log"
     "net/http"
     "sort"
