@@ -22,6 +22,7 @@ var (
         "http://www.questionablecontent.net/QCRSS.xml",
         "http://twitterthecomic.tumblr.com/rss",
         "http://www.xkcd.com/rss.xml",
+        "http://www.rsspect.com/rss/gunshowcomic.xml",
     }
     Funcs = T.FuncMap{
         "Safe":  func(s string) T.HTML { return T.HTML(s) },
@@ -47,12 +48,13 @@ var (
 )
 
 func init() {
-    charset.CharsetDir = "src/code.google.com/p/go-charset/datafiles"
+    charset.CharsetDir = "charsets"
 }
 
 type Item struct {
-    Title, Link, Description, Guid string
-    PubDate                        time.Time
+    Title, Link, Description string
+    Guid                     *string
+    PubDate                  time.Time
 }
 
 type SortedItems []*Item
