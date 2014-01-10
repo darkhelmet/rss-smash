@@ -1,0 +1,27 @@
+{
+	"ImportPath": "github.com/darkhelmet/rss-smash",
+	"GoVersion": "go1.2",
+	"Deps": [
+		{
+			"ImportPath": "code.google.com/p/go-charset/charset",
+			"Comment": "null-32",
+			"Rev": "ebbeafdc430eb6c7e44e9a730a38eaff4c56ba3a"
+		},
+		{
+			"ImportPath": "github.com/darkhelmet/env",
+			"Rev": "d1827543acd996dc90693a2ae0b1a18e33e0df17"
+		},
+		{
+			"ImportPath": "github.com/darkhelmet/goctopus",
+			"Rev": "c8169f9e9f32b54bdc6e3b2b8250d0351dd6efe1"
+		},
+		{
+			"ImportPath": "github.com/jteeuwen/go-pkg-rss",
+			"Rev": "269db380a38d96d568c0e51fa3d4534ddb3c1023"
+		},
+		{
+			"ImportPath": "github.com/jteeuwen/go-pkg-xmlx",
+			"Rev": "3623786eeb421657b11acad4aa1a9b89683c031f"
+		}
+	]
+}
